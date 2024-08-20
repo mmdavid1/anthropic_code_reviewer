@@ -1,4 +1,5 @@
 import { readFileSync } from "fs";
+import Anthropic from '@anthropic-ai/sdk';
 import * as core from "@actions/core";
 import { Octokit } from "@octokit/rest";
 import parseDiff, { Chunk, File } from "parse-diff";
@@ -10,8 +11,8 @@ const CLAUDE_MODEL: string = core.getInput("CLAUDE_MODEL");
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
+const anthropic = new Anthropic({
+  apiKey: ANTHROPIC_API_KEY
 });
 
 interface PRDetails {
@@ -117,28 +118,22 @@ async function getAIResponse(prompt: string): Promise<Array<{
     model: CLAUDE_MODEL,
     temperature: 0.2,
     max_tokens: 700,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
   };
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await anthropic.messages.create({
       ...queryConfig,
-      // return JSON if the model supports it:
-      ...(OPENAI_API_MODEL === "gpt-4-1106-preview"
-        ? { response_format: { type: "json_object" } }
-        : {}),
       messages: [
         {
-          role: "system",
+          role: "user",
           content: prompt,
         },
       ],
     });
 
-    const res = response.choices[0].message?.content?.trim() || "{}";
-    return JSON.parse(res).reviews;
+    const content = response.content[0].type === 'text' ? response.content[0].text : '';
+    const parsedContent = JSON.parse(content);
+    return parsedContent.reviews || null;
   } catch (error) {
     console.error("Error:", error);
     return null;
