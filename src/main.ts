@@ -9,7 +9,7 @@ import { promisify } from "util";
 import * as glob from "glob";
 
 const GITHUB_TOKEN: string = core.getInput("GITHUB_TOKEN");
-const ANTHROPIC_API_KEY: string = core.getInput("ANTHROPIC_KEY");
+const ANTHROPIC_API_KEY: string = core.getInput("ANTHROPIC_API_KEY");
 const CLAUDE_MODEL: string = core.getInput("CLAUDE_MODEL");
 
 const execAsync = promisify(exec);
