@@ -22,7 +22,7 @@ jobs:
         run: pip install pylint
 
       - name: Code Review
-        uses: lei-ucsd/automatic_code_reviewer@main
+        uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
