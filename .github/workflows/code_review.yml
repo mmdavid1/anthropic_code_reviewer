@@ -1,4 +1,4 @@
-name: Code Review with OpenAI
+name: Code Review with Anthropic
 on:
   pull_request:
     types:
@@ -12,9 +12,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Code Review
-        uses: freeedcom/ai-codereviewer@main
+        uses: lei-ucsd/automatic_code_reviewer@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_MODEL: "gpt-4-1106-preview"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: "claude-3-5-sonnet-20240620"
           exclude: "yarn.lock,dist/**"
