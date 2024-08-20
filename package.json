@@ -15,6 +15,7 @@
     "@actions/core": "^1.10.0",
     "@anthropic-ai/sdk": "^0.26.1",
     "@octokit/rest": "^19.0.7",
+    "glob": "^11.0.0",
     "minimatch": "^7.4.2",
     "parse-diff": "^0.11.1",
     "ts-node": "^10.9.1"

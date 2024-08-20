@@ -1,9 +1,10 @@
-name: Code Review with Anthropic
+name: Code Review with Anthropic and Pylint
 on:
   pull_request:
     types:
       - opened
       - synchronize
+    
 permissions: write-all
 jobs:
   code_review:
@@ -11,6 +12,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install pylint
+        run: pip install pylint
+
       - name: Code Review
         uses: lei-ucsd/automatic_code_reviewer@main
         with:
