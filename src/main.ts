@@ -20,6 +20,12 @@ const anthropic = new Anthropic({
   apiKey: ANTHROPIC_API_KEY
 });
 
+function sum(a: number, b: number) {
+  return a + b;
+}
+
+sum(10, 230);
+
 interface PRDetails {
   owner: string;
   repo: string;
