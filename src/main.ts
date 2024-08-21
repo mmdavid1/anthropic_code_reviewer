@@ -20,12 +20,6 @@ const anthropic = new Anthropic({
   apiKey: ANTHROPIC_API_KEY
 });
 
-function sum(a: number, b: number) {
-  return a + b;
-}
-
-sum(10, 230);
-
 interface PRDetails {
   owner: string;
   repo: string;
@@ -165,24 +159,23 @@ async function getAIResponse(prompt: string): Promise<Array<{
       ],
     });
 
-    console.log("Full API response:", JSON.stringify(response, null, 2));
     const content = response.content[0].type === 'text' ? response.content[0].text : '';
     let parsedContent;
     try {
       parsedContent = JSON.parse(content);
     } catch (jsonError) {
-      console.error("Error parsing JSON:", jsonError);
-      console.error("Attempting to clean and parse JSON...");
-
-      const cleanedContent = content.replace(/\\n/g, '\\n')
-                                    .replace(/\\'/g, "\\'")
-                                    .replace(/\\"/g, '\\"')
-                                    .replace(/\\&/g, '\\&')
-                                    .replace(/\\r/g, '\\r')
-                                    .replace(/\\t/g, '\\t')
-                                    .replace(/\\b/g, '\\b')
-                                    .replace(/\\f/g, '\\f');
+      console.error("Error parsing initial JSON:", jsonError);
+      const cleanedContent = content
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") 
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r")
+        .replace(/\t/g, "\\t")
+        .replace(/\f/g, "\\f")
+        .replace(/"/g, '\\"')
+        .replace(/\\'/g, "'");
       
+      console.log("Cleaned content:", cleanedContent);
+
       try {
         parsedContent = JSON.parse(cleanedContent);
       } catch (secondJsonError) {
@@ -197,7 +190,13 @@ async function getAIResponse(prompt: string): Promise<Array<{
       return null;
     }
 
-    return parsedContent.reviews;
+    // Ensure all reviewComments are properly escaped
+    const sanitizedReviews = parsedContent.reviews.map((review: { lineNumber: any; reviewComment: any; }) => ({
+      lineNumber: review.lineNumber,
+      reviewComment: JSON.parse(JSON.stringify(review.reviewComment))
+    }));
+
+    return sanitizedReviews;
   } catch (error) {
     console.error("Error in API call or processing:", error);
     if (error instanceof Error) {
