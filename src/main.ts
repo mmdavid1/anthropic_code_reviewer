@@ -3,17 +3,16 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as core from "@actions/core";
 import { Octokit } from "@octokit/rest";
 import parseDiff, { Chunk, File } from "parse-diff";
-import minimatch from "minimatch";
+import { minimatch } from "minimatch"; 
 import { exec } from "child_process";
 import { promisify } from "util";
-import * as glob from "glob";
+import { glob } from 'glob';
 
 const GITHUB_TOKEN: string = core.getInput("GITHUB_TOKEN");
 const ANTHROPIC_API_KEY: string = core.getInput("ANTHROPIC_API_KEY");
 const CLAUDE_MODEL: string = core.getInput("CLAUDE_MODEL");
 
 const execAsync = promisify(exec);
-const globAsync = promisify(glob) as (pattern: string, options?: glob.IOptions) => Promise<string[]>;
 
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
@@ -31,7 +30,7 @@ interface PRDetails {
 
 // Get pylint score on python files
 async function getPylintScore(): Promise<number> {
-  const files: string[] = await globAsync('**/*.py', { ignore: ['venv/**', 'env/**', 'node_modules/**'] });
+  const files: string[] = await glob('**/*.py', { ignore: ['venv/**', 'env/**', 'node_modules/**'] });
 
   if (files.length === 0) {
     console.log("No Python files found in the repository.");
@@ -48,7 +47,7 @@ async function getPylintScore(): Promise<number> {
 }
 
 function parsePylint(pylintOutput: string): number {
-  const match = pylintOutput.match(/Your code has been rated at (-?\d+\.\d+)/);
+  const match = pylintOutput.match(/The python files got a pylint score of: (-?\d+\.\d+)/);
   return match ? parseFloat(match[1]) : 0;
 }
 
@@ -258,11 +257,13 @@ async function main() {
   const comments = await analyzeCode(filteredDiff, prDetails);
   const pylintScore = await getPylintScore();
 
-  comments.push({
-    body: `The pylint score is: ${pylintScore.toFixed(2)}/10`,
-    path: filteredDiff[0]?.to || '',  // Add to the first changed file if exists
-    line: 1  // Add at the beginning of the file
-  });
+  if (pylintScore < 9) {
+    comments.push({
+      body: `The pylint score is: ${pylintScore.toFixed(2)}/10`,
+      path: filteredDiff[0]?.to || '',  // Add to the first changed file if exists
+      line: 1  // Add at the beginning of the file
+    });
+  } 
 
   if (comments.length > 0) {
     await createReviewComment(
