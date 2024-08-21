@@ -138,6 +138,12 @@ ${chunk.changes
 `;
 }
 
+function sum(a: number, b: number) {
+  return a + b;
+}
+
+sum(10, 10);
+
 async function getAIResponse(prompt: string): Promise<Array<{
   lineNumber: string;
   reviewComment: string;
