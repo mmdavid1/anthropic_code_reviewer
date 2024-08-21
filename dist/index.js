@@ -63,6 +63,7 @@ const anthropic = new sdk_1.default({
 function getPylintScore() {
     return __awaiter(this, void 0, void 0, function* () {
         const files = yield (0, glob_1.glob)('**/*.py', { ignore: ['venv/**', 'env/**', 'node_modules/**'] });
+        console.log(files);
         if (files.length === 0) {
             console.log("No Python files found in the repository.");
             return 10;
@@ -75,7 +76,7 @@ function getPylintScore() {
     });
 }
 function parsePylint(pylintOutput) {
-    const match = pylintOutput.match(/The python files got a pylint score of: (-?\d+\.\d+)/);
+    const match = pylintOutput.match(/Your code has been rated at (\d+\.\d+)/);
     return match ? parseFloat(match[1]) : 0;
 }
 function getPRDetails() {
@@ -281,13 +282,11 @@ function main() {
         });
         const comments = yield analyzeCode(filteredDiff, prDetails);
         const pylintScore = yield getPylintScore();
-        if (pylintScore < 9) {
-            comments.push({
-                body: `The pylint score is: ${pylintScore.toFixed(2)}/10`,
-                path: ((_b = filteredDiff[0]) === null || _b === void 0 ? void 0 : _b.to) || '',
-                line: 1 // Add at the beginning of the file
-            });
-        }
+        comments.push({
+            body: `The pylint score is: ${pylintScore.toFixed(2)}/10`,
+            path: ((_b = filteredDiff[0]) === null || _b === void 0 ? void 0 : _b.to) || '',
+            line: 1 // Add at the beginning of the file
+        });
         if (comments.length > 0) {
             yield createReviewComment(prDetails.owner, prDetails.repo, prDetails.pull_number, comments);
         }
