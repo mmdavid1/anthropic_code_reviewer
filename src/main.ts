@@ -257,7 +257,7 @@ async function main() {
   const comments = await analyzeCode(filteredDiff, prDetails);
   const pylintScore = await getPylintScore();
 
-  if (pylintScore < 9) {
+  if (pylintScore < 10) {
     comments.push({
       body: `The pylint score is: ${pylintScore.toFixed(2)}/10`,
       path: filteredDiff[0]?.to || '',  // Add to the first changed file if exists
