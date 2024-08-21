@@ -159,11 +159,45 @@ async function getAIResponse(prompt: string): Promise<Array<{
       ],
     });
 
+    console.log("Full API response:", JSON.stringify(response, null, 2));
     const content = response.content[0].type === 'text' ? response.content[0].text : '';
-    const parsedContent = JSON.parse(content);
-    return parsedContent.reviews || null;
+    let parsedContent;
+    try {
+      parsedContent = JSON.parse(content);
+    } catch (jsonError) {
+      console.error("Error parsing JSON:", jsonError);
+      console.error("Attempting to clean and parse JSON...");
+
+      const cleanedContent = content.replace(/\\n/g, '\\n')
+                                    .replace(/\\'/g, "\\'")
+                                    .replace(/\\"/g, '\\"')
+                                    .replace(/\\&/g, '\\&')
+                                    .replace(/\\r/g, '\\r')
+                                    .replace(/\\t/g, '\\t')
+                                    .replace(/\\b/g, '\\b')
+                                    .replace(/\\f/g, '\\f');
+      
+      try {
+        parsedContent = JSON.parse(cleanedContent);
+      } catch (secondJsonError) {
+        console.error("Error parsing cleaned JSON:", secondJsonError);
+        console.error("Cleaned content that failed to parse:", cleanedContent);
+        return null;
+      }
+    }
+
+    if (!parsedContent.reviews || !Array.isArray(parsedContent.reviews)) {
+      console.error("Parsed content does not contain a 'reviews' array:", parsedContent);
+      return null;
+    }
+
+    return parsedContent.reviews;
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in API call or processing:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return null;
   }
 }
